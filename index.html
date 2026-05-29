@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🎉 每日抽獎</title>
+  <title>2026年度主辦人抽籤</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -13,27 +13,36 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 24px;
     }
+    .layout {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+      max-width: 860px;
+      width: 100%;
+    }
+
+    /* 左側主卡片 */
     .card {
       background: white;
       border-radius: 24px;
       padding: 48px 40px;
-      max-width: 480px;
-      width: 100%;
+      flex: 1;
       text-align: center;
       box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      min-width: 0;
     }
-    h1 { font-size: 2rem; margin-bottom: 8px; }
+    h1 { font-size: 1.7rem; margin-bottom: 8px; }
     .subtitle { color: #888; margin-bottom: 32px; font-size: 0.95rem; }
     #countdown {
-      font-size: 3.5rem;
+      font-size: 3.2rem;
       font-weight: 800;
       color: #667eea;
       letter-spacing: 4px;
       margin: 16px 0;
     }
-    #status-text { color: #aaa; font-size: 0.9rem; margin-bottom: 24px; }
+    #status-text { color: #aaa; font-size: 0.9rem; margin-bottom: 8px; }
     #winner-box {
       display: none;
       background: #f0fdf4;
@@ -47,44 +56,124 @@
     .winner-name { font-size: 2.2rem; font-weight: 800; color: #15803d; margin: 8px 0; }
     .prize-name { color: #166534; font-size: 1rem; margin-bottom: 12px; }
     .draw-time { color: #aaa; font-size: 0.8rem; }
-    .waiting-icon { font-size: 3rem; margin-bottom: 16px; animation: spin 3s linear infinite; }
-    @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+    .waiting-icon { font-size: 3rem; margin-bottom: 16px; }
+
+    /* 右側名單卡片 */
+    .list-card {
+      background: white;
+      border-radius: 24px;
+      padding: 28px 24px;
+      width: 200px;
+      flex-shrink: 0;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    .list-card h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #444;
+      margin-bottom: 4px;
+    }
+    .list-count {
+      font-size: 0.8rem;
+      color: #aaa;
+      margin-bottom: 16px;
+    }
+    .name-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .name-list li {
+      background: #f5f3ff;
+      color: #5b21b6;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    .name-list li.winner-highlight {
+      background: #f0fdf4;
+      color: #15803d;
+      border: 1.5px solid #86efac;
+    }
+
+    @media (max-width: 600px) {
+      .layout { flex-direction: column; }
+      .list-card { width: 100%; }
+    }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>🎰 每日抽獎</h1>
-    <p class="subtitle">開獎時間：每天晚上 <strong>20:00</strong></p>
+  <div class="layout">
 
-    <div id="waiting-section">
-      <div class="waiting-icon">⏳</div>
-      <div id="countdown">--:--:--</div>
-      <div id="status-text">距離開獎還有</div>
+    <!-- 左側主卡片 -->
+    <div class="card">
+      <h1>🎴 2026年度主辦人抽籤</h1>
+      <p class="subtitle">抽籤時間：2026/05/29 20:00</p>
+
+      <div id="waiting-section">
+        <div class="waiting-icon">⏳</div>
+        <div id="countdown">--:--:--</div>
+        <div id="status-text">倒數計時</div>
+      </div>
+
+      <div id="winner-box">
+        <div class="trophy">🏆</div>
+        <div class="winner-label">主辦方</div>
+        <div class="winner-name" id="winner-name"></div>
+        <div class="prize-name" id="prize-name"></div>
+        <div class="draw-time" id="draw-time"></div>
+      </div>
     </div>
 
-    <div id="winner-box">
-      <div class="trophy">🏆</div>
-      <div class="winner-label">恭喜得獎者</div>
-      <div class="winner-name" id="winner-name"></div>
-      <div class="prize-name" id="prize-name"></div>
-      <div class="draw-time" id="draw-time"></div>
+    <!-- 右側名單 -->
+    <div class="list-card">
+      <h2>📋 參與名單</h2>
+      <div class="list-count" id="list-count">讀取中...</div>
+      <ul class="name-list" id="name-list">
+      </ul>
     </div>
+
   </div>
 
   <script>
-    // ★★★ 把這裡換成你的 Apps Script Web App URL ★★★
-    const API_URL = 'https://script.google.com/macros/s/AKfycbyjwDWpkyZlODF0JGYaEJwMKgbrzI-dDcxM9r2kO2rjAURWfkBs5wrzhbH-4biqVPDNjQ/exec';
+    // ★★★ 換成你的 Apps Script Web App URL ★★★
+    const API_URL = 'https://script.google.com/macros/s/在這裡貼上你的URL/exec';
 
-    async function checkResult() {
+    // 抽籤時間：2026/05/29 20:00（台北時間）
+    const DRAW_TIME = new Date('2026-05-29T20:00:00+08:00');
+
+    let winnerName = null;
+
+    async function fetchData() {
       try {
         const res = await fetch(API_URL);
         const data = await res.json();
+
+        // 顯示名單
+        if (data.names && data.names.length > 0) {
+          const list = document.getElementById('name-list');
+          document.getElementById('list-count').textContent = `共 ${data.names.length} 人`;
+          list.innerHTML = data.names.map(n =>
+            `<li class="${n === winnerName ? 'winner-highlight' : ''}">${n}</li>`
+          ).join('');
+        }
+
+        // 顯示得獎結果
         if (data.status === 'done') {
+          winnerName = data.winner;
           document.getElementById('waiting-section').style.display = 'none';
           document.getElementById('winner-box').style.display = 'block';
           document.getElementById('winner-name').textContent = data.winner;
-          document.getElementById('prize-name').textContent = '獎項：' + data.prize;
-          document.getElementById('draw-time').textContent = '開獎時間：' + data.time;
+          document.getElementById('prize-name').textContent = data.prize || '';
+          document.getElementById('draw-time').textContent = '抽籤時間：' + data.time;
+          // 更新名單高亮
+          document.querySelectorAll('.name-list li').forEach(li => {
+            li.classList.toggle('winner-highlight', li.textContent === winnerName);
+          });
         }
       } catch (e) {
         console.error('查詢失敗', e);
@@ -93,22 +182,27 @@
 
     function updateCountdown() {
       const now = new Date();
-      const target = new Date();
-      target.setHours(20, 0, 0, 0);
-      if (now >= target) {
-        checkResult();
+      const diff = DRAW_TIME - now;
+
+      if (diff <= 0) {
+        document.getElementById('countdown').textContent = '開獎中...';
+        fetchData();
         return;
       }
-      const diff = target - now;
+
       const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
       const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
       const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
       document.getElementById('countdown').textContent = `${h}:${m}:${s}`;
     }
 
+    // 每秒更新倒數
     setInterval(updateCountdown, 1000);
     updateCountdown();
-    checkResult();
+
+    // 每30秒重新抓名單和結果
+    setInterval(fetchData, 30000);
+    fetchData();
   </script>
 </body>
 </html>
