@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎉 每日抽獎</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 24px;
+      padding: 48px 40px;
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    h1 { font-size: 2rem; margin-bottom: 8px; }
+    .subtitle { color: #888; margin-bottom: 32px; font-size: 0.95rem; }
+    #countdown {
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: #667eea;
+      letter-spacing: 4px;
+      margin: 16px 0;
+    }
+    #status-text { color: #aaa; font-size: 0.9rem; margin-bottom: 24px; }
+    #winner-box {
+      display: none;
+      background: #f0fdf4;
+      border: 2px solid #86efac;
+      border-radius: 16px;
+      padding: 32px;
+      margin-top: 16px;
+    }
+    .trophy { font-size: 3rem; margin-bottom: 12px; }
+    .winner-label { color: #16a34a; font-size: 0.9rem; font-weight: 600; letter-spacing: 2px; }
+    .winner-name { font-size: 2.2rem; font-weight: 800; color: #15803d; margin: 8px 0; }
+    .prize-name { color: #166534; font-size: 1rem; margin-bottom: 12px; }
+    .draw-time { color: #aaa; font-size: 0.8rem; }
+    .waiting-icon { font-size: 3rem; margin-bottom: 16px; animation: spin 3s linear infinite; }
+    @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🎰 每日抽獎</h1>
+    <p class="subtitle">開獎時間：每天晚上 <strong>20:00</strong></p>
+
+    <div id="waiting-section">
+      <div class="waiting-icon">⏳</div>
+      <div id="countdown">--:--:--</div>
+      <div id="status-text">距離開獎還有</div>
+    </div>
+
+    <div id="winner-box">
+      <div class="trophy">🏆</div>
+      <div class="winner-label">恭喜得獎者</div>
+      <div class="winner-name" id="winner-name"></div>
+      <div class="prize-name" id="prize-name"></div>
+      <div class="draw-time" id="draw-time"></div>
+    </div>
+  </div>
+
+  <script>
+    // ★★★ 把這裡換成你的 Apps Script Web App URL ★★★
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyjwDWpkyZlODF0JGYaEJwMKgbrzI-dDcxM9r2kO2rjAURWfkBs5wrzhbH-4biqVPDNjQ/exec';
+
+    async function checkResult() {
+      try {
+        const res = await fetch(API_URL);
+        const data = await res.json();
+        if (data.status === 'done') {
+          document.getElementById('waiting-section').style.display = 'none';
+          document.getElementById('winner-box').style.display = 'block';
+          document.getElementById('winner-name').textContent = data.winner;
+          document.getElementById('prize-name').textContent = '獎項：' + data.prize;
+          document.getElementById('draw-time').textContent = '開獎時間：' + data.time;
+        }
+      } catch (e) {
+        console.error('查詢失敗', e);
+      }
+    }
+
+    function updateCountdown() {
+      const now = new Date();
+      const target = new Date();
+      target.setHours(20, 0, 0, 0);
+      if (now >= target) {
+        checkResult();
+        return;
+      }
+      const diff = target - now;
+      const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
+      const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+      const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+      document.getElementById('countdown').textContent = `${h}:${m}:${s}`;
+    }
+
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+    checkResult();
+  </script>
+</body>
+</html>
